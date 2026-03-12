@@ -1,0 +1,9 @@
+# 개인 설정 파일 (토큰 포함)
+confluence_config.json
+
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store

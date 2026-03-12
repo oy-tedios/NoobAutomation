@@ -1,0 +1,32 @@
+#!/bin/bash
+# Confluence 자동화 CLI
+# 사용법: cf weekly | cf release [버전]
+
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+PYTHON_SCRIPT="$SCRIPT_DIR/confluence_automation.py"
+
+if [[ $# -eq 0 ]]; then
+    echo "사용법:"
+    echo "  cf weekly           주간업무보고 생성"
+    echo "  cf release          릴리즈노트 생성 (자동 버전)"
+    echo "  cf release 3.49.0   릴리즈노트 생성 (버전 지정)"
+    exit 0
+fi
+
+case "$1" in
+    weekly)
+        python3 "$PYTHON_SCRIPT" weekly
+        ;;
+    release)
+        if [[ -n "$2" ]]; then
+            python3 "$PYTHON_SCRIPT" release "$2"
+        else
+            python3 "$PYTHON_SCRIPT" release
+        fi
+        ;;
+    *)
+        echo "❌ 알 수 없는 명령: $1"
+        echo "사용법: cf weekly | cf release [버전]"
+        exit 1
+        ;;
+esac
