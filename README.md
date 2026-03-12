@@ -10,20 +10,19 @@ Confluence 페이지 자동 생성 도구
 
 ## 설치
 
-### 1. 설치 스크립트 실행
-
 ```bash
-chmod +x install.sh
+git clone https://github.com/oy-tedios/NoobAutomation.git
+cd NoobAutomation
 ./install.sh
 source ~/.zshrc
 ```
 
-### 2. Personal Access Token 설정
+### Personal Access Token 설정
 
 1. Confluence 접속: https://oyitsm.cj.net/confluence
 2. 우측 상단 프로필 > 설정 > Personal Access Tokens
 3. 토큰 생성 후 복사
-4. `~/confluence_config.json` 파일에서 `token` 값 수정
+4. `confluence_config.json` 파일에서 `token` 값 수정
 
 ```json
 {
@@ -66,8 +65,8 @@ cf release-android 3.47.0   # 버전 직접 지정
 ## 파일 구조
 
 ```
-~/
-├── cf                        # CLI 명령어
-├── confluence_automation.py  # 메인 스크립트
-└── confluence_config.json    # 설정 파일 (토큰 포함)
+NoobAutomation/
+├── cf                          # CLI 명령어
+├── confluence_automation.py    # 메인 스크립트
+└── confluence_config.json      # 설정 파일 (install.sh 실행 시 생성, git 제외)
 ```
