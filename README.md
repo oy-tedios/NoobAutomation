@@ -5,8 +5,8 @@ Confluence 페이지 자동 생성 도구
 ## 기능
 
 - `cf weekly` : 주간업무보고 페이지 생성 (다음 미생성 주차 자동 탐색)
-- `cf release` : iOS 릴리즈노트 생성 (자동 버전)
-- `cf release 3.49.0` : iOS 릴리즈노트 생성 (버전 지정)
+- `cf release` : iOS 릴리즈노트 생성
+- `cf release-android` : Android 릴리즈노트 생성
 
 ## 설치
 
@@ -46,9 +46,16 @@ cf weekly
 
 ### 릴리즈노트
 
+#### iOS
 ```bash
 cf release          # 최신 버전 +0.1.0 자동 계산
 cf release 3.50.0   # 버전 직접 지정
+```
+
+#### Android
+```bash
+cf release-android          # 최신 버전 +0.1.0 자동 계산
+cf release-android 3.47.0   # 버전 직접 지정
 ```
 
 ## 요구사항

@@ -293,11 +293,16 @@ def create_weekly_report(api: ConfluenceAPI, config: dict):
     print(f"🔗 {page_url}")
 
 
-def get_latest_version(api: ConfluenceAPI, parent_page_id: str) -> tuple:
-    """최신 iOS 버전 조회"""
+def get_latest_version(api: ConfluenceAPI, parent_page_id: str, platform: str = "ios") -> tuple:
+    """최신 버전 조회"""
     children = api.get_children(parent_page_id)
 
-    version_pattern = re.compile(r"iOS\s+(\d+)\.(\d+)\.(\d+)-\d+")
+    if platform == "ios":
+        version_pattern = re.compile(r"iOS\s+(\d+)\.(\d+)\.(\d+)-\d+")
+    else:
+        # Android v3.45.0-260331 형식 지원
+        version_pattern = re.compile(r"Android\s+v?(\d+)\.(\d+)\.(\d+)-\d+")
+
     latest = (0, 0, 0)
 
     for child in children:
@@ -324,17 +329,18 @@ def increment_version(version: tuple, increment_type: str = "minor") -> str:
         return f"{major}.{minor + 1}.0"
 
 
-def create_release_note(api: ConfluenceAPI, config: dict, version: str = None):
-    """iOS 릴리즈노트 페이지 생성"""
-    print("📱 iOS 릴리즈노트 페이지 생성 중...")
+def create_release_note(api: ConfluenceAPI, config: dict, platform: str = "ios", version: str = None):
+    """릴리즈노트 페이지 생성"""
+    platform_name = "iOS" if platform == "ios" else "Android"
+    print(f"📱 {platform_name} 릴리즈노트 페이지 생성 중...")
 
-    release_config = config["release_note"]
+    release_config = config["release_note"][platform]
     space_key = release_config["space_key"]
     parent_id = release_config["parent_page_id"]
 
     # 버전 결정
     if not version:
-        latest = get_latest_version(api, parent_id)
+        latest = get_latest_version(api, parent_id, platform)
         if latest == (0, 0, 0):
             print("❌ 기존 버전을 찾을 수 없습니다. 버전을 직접 입력해주세요.")
             version = input("버전 입력 (예: 3.49.0): ").strip()
@@ -348,9 +354,13 @@ def create_release_note(api: ConfluenceAPI, config: dict, version: str = None):
             elif confirm and confirm.lower() != "y":
                 version = confirm
 
-    # 날짜 계산: 기준점(3.48.0 = 2026-05-04)에서 버전 차이만큼 2주씩 증가
-    base_version = (3, 48, 0)
-    base_date = datetime(2026, 5, 4)  # 3.48.0 배포일 (월요일)
+    # 날짜 계산: 기준점에서 버전 차이만큼 2주씩 증가
+    if platform == "ios":
+        base_version = (3, 48, 0)
+        base_date = datetime(2026, 5, 4)  # iOS 3.48.0 배포일 (월요일)
+    else:
+        base_version = (3, 46, 0)
+        base_date = datetime(2026, 4, 6)  # Android v3.46.0-260406
 
     # 버전 파싱
     version_parts = tuple(map(int, version.split(".")))
@@ -368,7 +378,11 @@ def create_release_note(api: ConfluenceAPI, config: dict, version: str = None):
         release_date = base_date + timedelta(weeks=2 * minor_diff)
         date_str = release_date.strftime("%y%m%d")
 
-    title = f"iOS {version}-{date_str}"
+    # Android는 v 접두사 사용
+    if platform == "android":
+        title = f"{platform_name} v{version}-{date_str}"
+    else:
+        title = f"{platform_name} {version}-{date_str}"
     print(f"📅 배포 예정일: {date_str}")
 
     # 이미 존재하는지 확인
@@ -392,6 +406,10 @@ def create_release_note(api: ConfluenceAPI, config: dict, version: str = None):
 
     # 2. 지라 쿼리 버전 치환: "배포버전" ~ "3.XX.0*" → "배포버전" ~ "3.49.0*"
     body = re.sub(r'"배포버전"\s*~\s*"3\.XX\.0\*"', f'"배포버전" ~ "{version}*"', body)
+
+    # 3. 플랫폼명 치환 (Android 템플릿에 iOS가 있을 경우 대비)
+    if platform == "android":
+        body = body.replace("iOS", "Android")
 
     # 페이지 생성
     new_page = api.create_page(
@@ -441,10 +459,11 @@ if __name__ == "__main__":
         if sys.argv[1] == "weekly":
             create_weekly_report(api, config)
         elif sys.argv[1] == "release":
-            version = sys.argv[2] if len(sys.argv) > 2 else None
-            create_release_note(api, config, version)
+            platform = sys.argv[2] if len(sys.argv) > 2 else "ios"
+            version = sys.argv[3] if len(sys.argv) > 3 else None
+            create_release_note(api, config, platform, version)
         else:
             print(f"❌ 알 수 없는 명령: {sys.argv[1]}")
-            print("사용법: python confluence_automation.py [weekly|release] [version]")
+            print("사용법: python confluence_automation.py [weekly|release] [ios|android] [version]")
     else:
         main()

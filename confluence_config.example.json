@@ -7,8 +7,15 @@
     "space_key": "CJOLIVE"
   },
   "release_note": {
-    "parent_page_id": "318845645",
-    "template_id": "322732035",
-    "space_key": "CJOLIVE"
+    "ios": {
+      "parent_page_id": "318845645",
+      "template_id": "322732035",
+      "space_key": "CJOLIVE"
+    },
+    "android": {
+      "parent_page_id": "318845652",
+      "template_id": "322732033",
+      "space_key": "CJOLIVE"
+    }
   }
 }
